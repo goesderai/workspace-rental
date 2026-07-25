@@ -11,7 +11,7 @@ import { isEmpty } from '@/lib/state'
  * should never be whatever the caller says it is.
  */
 export async function POST(request: Request) {
-  let body: { s?: string; t?: string; name?: string; area?: string }
+  let body: { s?: string; t?: string; name?: string; phone?: string; area?: string }
   try {
     body = await request.json()
   } catch {
@@ -22,6 +22,15 @@ export async function POST(request: Request) {
   if (isEmpty(state)) {
     return NextResponse.json(
       { error: 'That setup is empty. Add a desk before renting.' },
+      { status: 422 },
+    )
+  }
+
+  const name = body.name?.trim()
+  const phone = body.phone?.trim()
+  if (!name || !phone) {
+    return NextResponse.json(
+      { error: 'Name and phone are required.' },
       { status: 422 },
     )
   }
@@ -39,6 +48,8 @@ export async function POST(request: Request) {
     deliveryDate: delivery.toISOString(),
     deliveryLabel: formatDeliveryDate(delivery),
     area: body.area ?? 'Bali',
+    name,
+    phone,
   })
 }
 

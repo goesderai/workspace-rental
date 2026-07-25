@@ -26,6 +26,8 @@ type Order = {
   termWeeks: number
   deliveryLabel: string
   area: string
+  name: string
+  phone: string
 }
 
 /** A line of the money breakdown. */
@@ -68,6 +70,9 @@ export default function Checkout({ state }: { state: WorkspaceState }) {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [area, setArea] = useState(AREAS[0])
+  const [detail, setDetail] = useState('')
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
 
   const q = quote(state)
   const placed = new Map(entriesOf(state))
@@ -92,14 +97,19 @@ export default function Checkout({ state }: { state: WorkspaceState }) {
   }
 
   async function submit() {
+    if (!name.trim() || !phone.trim()) {
+      setError('Add your name and phone number so we can reach you on delivery.')
+      return
+    }
     setPending(true)
     setError(null)
     try {
       const { s, t } = encodeState(state)
+      const fullArea = detail.trim() ? `${area} — ${detail.trim()}` : area
       const res = await fetch('/api/rent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ s, t, area }),
+        body: JSON.stringify({ s, t, area: fullArea, name: name.trim(), phone: phone.trim() }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -131,6 +141,7 @@ export default function Checkout({ state }: { state: WorkspaceState }) {
 
         <dl className="mt-8 text-sm">
           <Row label="Reference" value={order.orderId} />
+          <Row label="Contact" value={`${order.name}, ${order.phone}`} />
           <Row label="Arrives" value={`${order.deliveryLabel}, ${order.area}`} />
           <Row label="Term" value={TERM_LABEL[order.termWeeks as 1 | 4 | 12 | 24]} />
           <Row label="Weekly rate" value={`${money(order.weekly)}/week`} />
@@ -225,6 +236,30 @@ export default function Checkout({ state }: { state: WorkspaceState }) {
           </dl>
 
           <label className="mt-5 block">
+            <span className="eyebrow">Name</span>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Full name"
+              className="mt-1.5 w-full border border-rule bg-paper px-3 py-2 text-sm placeholder:text-muted"
+            />
+          </label>
+
+          <label className="mt-3 block">
+            <span className="eyebrow">Phone</span>
+            <input
+              type="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+62 8xx xxxx xxxx"
+              className="mt-1.5 w-full border border-rule bg-paper px-3 py-2 text-sm placeholder:text-muted"
+            />
+          </label>
+
+          <label className="mt-5 block">
             <span className="eyebrow">Deliver to</span>
             <select
               value={area}
@@ -237,6 +272,17 @@ export default function Checkout({ state }: { state: WorkspaceState }) {
                 </option>
               ))}
             </select>
+          </label>
+
+          <label className="mt-3 block">
+            <span className="eyebrow">Landmark or street (optional)</span>
+            <textarea
+              value={detail}
+              onChange={(e) => setDetail(e.target.value)}
+              placeholder="e.g. Jl. Pantai Berawa, near Deus Cafe"
+              rows={2}
+              className="mt-1.5 w-full resize-none border border-rule bg-paper px-3 py-2 text-sm placeholder:text-muted"
+            />
           </label>
 
           <p className="mt-3 text-xs text-muted">
