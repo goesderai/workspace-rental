@@ -236,7 +236,7 @@ export default function Checkout({ state }: { state: WorkspaceState }) {
           </dl>
 
           <label className="mt-5 block">
-            <span className="eyebrow">Name</span>
+            <span className="eyebrow">Name *</span>
             <input
               type="text"
               required
@@ -248,7 +248,7 @@ export default function Checkout({ state }: { state: WorkspaceState }) {
           </label>
 
           <label className="mt-3 block">
-            <span className="eyebrow">Phone</span>
+            <span className="eyebrow">Phone *</span>
             <input
               type="tel"
               required
@@ -284,6 +284,7 @@ export default function Checkout({ state }: { state: WorkspaceState }) {
               className="mt-1.5 w-full resize-none border border-rule bg-paper px-3 py-2 text-sm placeholder:text-muted"
             />
           </label>
+          <p className="mt-1.5 text-xs text-muted">Fields marked with * are required.</p>
 
           <p className="mt-3 text-xs text-muted">
             Free delivery, assembly and pickup. Arrives{' '}
