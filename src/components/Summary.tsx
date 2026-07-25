@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { SLOT_LABELS, SLOT_ORDER } from '@/lib/slots'
 import { entriesOf, isEmpty } from '@/lib/state'
 import { money } from '@/lib/pricing'
@@ -11,22 +12,47 @@ import { useWorkspace } from './WorkspaceProvider'
  */
 export default function Summary() {
   const { state, dispatch, setFocused } = useWorkspace()
+  const [copied, setCopied] = useState(false)
   const placed = new Map(entriesOf(state))
   const order = SLOT_ORDER.filter((s) => placed.has(s))
 
   if (isEmpty(state)) return null
 
+  /*
+   * The whole setup lives in the URL, so sharing is just copying the address
+   * bar. Read at click time rather than held in state — nothing to keep in sync.
+   */
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1800)
+    } catch {
+      // Clipboard blocked (insecure context or denied permission). The address
+      // bar already holds the link, so there is nothing to recover from.
+    }
+  }
+
   return (
     <div className="border border-rule">
       <div className="flex items-baseline justify-between border-b border-rule px-3 py-2">
         <h2 className="eyebrow">In this setup</h2>
-        <button
-          type="button"
-          onClick={() => dispatch({ type: 'reset' })}
-          className="text-xs text-muted underline decoration-rule underline-offset-2 hover:text-ink"
-        >
-          Clear all
-        </button>
+        <div className="flex items-baseline gap-4">
+          <button
+            type="button"
+            onClick={copyLink}
+            className="text-xs text-muted underline decoration-rule underline-offset-2 hover:text-ink"
+          >
+            {copied ? 'Link copied' : 'Copy link to this setup'}
+          </button>
+          <button
+            type="button"
+            onClick={() => dispatch({ type: 'reset' })}
+            className="text-xs text-muted underline decoration-rule underline-offset-2 hover:text-ink"
+          >
+            Clear all
+          </button>
+        </div>
       </div>
 
       <ul className="divide-y divide-rule">

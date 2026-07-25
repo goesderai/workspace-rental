@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import { SLOT_LABELS, SLOT_ORDER } from '@/lib/slots'
 import { entriesOf, isEmpty, TERMS, type WorkspaceState } from '@/lib/state'
 import {
-  TERM_DISCOUNT,
   TERM_LABEL,
   deliveryDate,
   formatDeliveryDate,

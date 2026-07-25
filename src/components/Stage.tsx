@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { isoTranslate, project, points } from '@/lib/iso'
 import { PALETTE } from '@/lib/palette'
 import {
@@ -13,32 +14,46 @@ import {
 } from '@/lib/slots'
 import { deskItem, entriesOf } from '@/lib/state'
 import { money } from '@/lib/pricing'
-import { getItem } from '@/data/catalog'
+import { getItem, type Item } from '@/data/catalog'
 import { useWorkspace } from './WorkspaceProvider'
 import { Floor, PlanGrid, stageViewBox } from './scene'
 
-/** Dashed footprint marking a slot that would accept what you are holding. */
+/**
+ * Dashed footprint marking a slot that would accept what you are holding, and
+ * the drop target for it. Highlights while the pointer is over it.
+ */
 function SlotGhost({
   slot,
   at,
   size,
-  active,
-  onPick,
+  shown,
 }: {
   slot: SlotId
   at: { x: number; y: number; z: number }
   size: number
-  active: boolean
-  onPick: () => void
+  /** Whether this slot would accept what the person is currently reaching for. */
+  shown: boolean
 }) {
+  const { focused, setFocused } = useWorkspace()
+  const { setNodeRef, isOver } = useDroppable({ id: slot })
+  const active = isOver || focused === slot
   const half = size / 2
+
   return (
     <g
+      ref={setNodeRef as unknown as React.Ref<SVGGElement>}
       transform={isoTranslate(at.x, at.y, at.z)}
-      onClick={onPick}
-      className="cursor-pointer"
-      role="button"
-      aria-label={`Place in ${SLOT_LABELS[slot]}`}
+      onMouseEnter={() => setFocused(slot)}
+      onMouseLeave={() => setFocused((cur) => (cur === slot ? null : cur))}
+      aria-label={`Drop in ${SLOT_LABELS[slot]}`}
+      /*
+       * Kept mounted even when hidden. dnd-kit measures droppables as a drag
+       * starts, and a target that only appears once the drag is under way is
+       * never measured — so the drop silently does nothing.
+       */
+      opacity={shown ? 1 : 0}
+      pointerEvents={shown ? 'auto' : 'none'}
+      aria-hidden={!shown}
     >
       <polygon
         points={points([
@@ -47,14 +62,53 @@ function SlotGhost({
           project(half, half),
           project(-half, half),
         ])}
-        fill={active ? PALETTE.surf : 'transparent'}
-        fillOpacity={active ? 0.14 : 0}
+        fill={PALETTE.surf}
+        fillOpacity={active ? 0.16 : 0.04}
         stroke={PALETTE.surf}
-        strokeWidth={active ? 2.4 : 1.4}
+        strokeWidth={active ? 2.6 : 1.4}
         strokeDasharray="7 5"
-        opacity={active ? 1 : 0.5}
+        opacity={active ? 1 : 0.55}
       />
     </g>
+  )
+}
+
+/** A placed item: draggable, and dragging it off the stage removes it. */
+function PlacedItem({
+  slot,
+  item,
+  at,
+}: {
+  slot: SlotId
+  item: Item
+  at: { x: number; y: number; z: number }
+}) {
+  const { dispatch, setFocused } = useWorkspace()
+  const reduced = useReducedMotion()
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `placed:${slot}`,
+    data: { item, from: slot },
+  })
+
+  return (
+    <motion.g
+      ref={setNodeRef as unknown as React.Ref<SVGGElement>}
+      initial={reduced ? { opacity: 0 } : { opacity: 0, y: -18 }}
+      animate={{ opacity: isDragging ? 0.35 : 1, y: 0 }}
+      exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
+      transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+      style={{ transformOrigin: 'center' }}
+      onMouseEnter={() => setFocused(slot)}
+      onMouseLeave={() => setFocused((cur) => (cur === slot ? null : cur))}
+      onClick={() => dispatch({ type: 'remove', slot })}
+      className="cursor-grab active:cursor-grabbing"
+      {...listeners}
+      {...attributes}
+    >
+      <g transform={isoTranslate(at.x, at.y, at.z)}>
+        <item.Art />
+      </g>
+    </motion.g>
   )
 }
 
@@ -108,21 +162,20 @@ function Callout({
 }
 
 export default function Stage() {
-  const { state, dispatch, armed, focused, setFocused } = useWorkspace()
-  const reduced = useReducedMotion()
+  const { state, armed, focused } = useWorkspace()
 
   const desk = deskItem(state)
   const anchors = anchorsFor(desk?.size ?? null)
   const placed = new Map(entriesOf(state))
 
-  /** Slots that would accept the armed category and are worth offering. */
-  const openSlots = armed
-    ? SLOT_ORDER.filter(
-        (s) =>
-          SLOT_ACCEPTS[s].includes(armed) &&
-          !(DESK_DEPENDENT.includes(s) && !state.placements.DESK),
-      )
-    : []
+  /**
+   * Every slot that could ever be dropped into right now. All of them stay
+   * mounted as drop targets; `shown` decides which are visible.
+   */
+  const dropSlots = SLOT_ORDER.filter(
+    (s) => !(DESK_DEPENDENT.includes(s) && !state.placements.DESK),
+  )
+  const accepts = (s: SlotId) => Boolean(armed && SLOT_ACCEPTS[s].includes(armed))
 
   const ghostSize = (slot: SlotId) =>
     slot === 'RUG' ? 150 : slot === 'DESK' ? 120 : slot === 'CHAIR' ? 56 : 40
@@ -137,30 +190,20 @@ export default function Stage() {
       <Floor />
       <PlanGrid />
 
-      {/* The setup itself, painted in fixed depth order. */}
-      <AnimatePresence>
-        {SLOT_ORDER.filter((s) => placed.has(s)).map((slot) => {
-          const item = placed.get(slot)!
-          const at = anchors[slot]
-          return (
-            <motion.g
-              key={`${slot}:${item.id}`}
-              initial={reduced ? { opacity: 0 } : { opacity: 0, y: -18 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 26 }}
-              style={{ transformOrigin: 'center' }}
-              onMouseEnter={() => setFocused(slot)}
-              onMouseLeave={() => setFocused((cur) => (cur === slot ? null : cur))}
-              onClick={() => dispatch({ type: 'remove', slot })}
-              className="cursor-pointer"
-            >
-              <g transform={isoTranslate(at.x, at.y, at.z)}>
-                <item.Art />
-              </g>
-            </motion.g>
-          )
-        })}
+      {/*
+       * The setup itself, painted in fixed depth order. `initial={false}` means
+       * a setup restored from a shared link is simply there on first paint;
+       * only items added afterwards drop in.
+       */}
+      <AnimatePresence initial={false}>
+        {SLOT_ORDER.filter((s) => placed.has(s)).map((slot) => (
+          <PlacedItem
+            key={`${slot}:${placed.get(slot)!.id}`}
+            slot={slot}
+            item={placed.get(slot)!}
+            at={anchors[slot]}
+          />
+        ))}
       </AnimatePresence>
 
       {/*
@@ -168,14 +211,13 @@ export default function Stage() {
        * for desk-mounted slots disappear behind the desktop — which is exactly
        * where you most need to see them.
        */}
-      {openSlots.map((slot) => (
+      {dropSlots.map((slot) => (
         <SlotGhost
           key={slot}
           slot={slot}
           at={anchors[slot]}
           size={ghostSize(slot)}
-          active={focused === slot}
-          onPick={() => setFocused(slot)}
+          shown={accepts(slot)}
         />
       ))}
 

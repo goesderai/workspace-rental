@@ -28,8 +28,6 @@ type Ctx = {
   /** Slot under the pointer, for the dimension callout. */
   focused: SlotId | null
   setFocused: Dispatch<SetStateAction<SlotId | null>>
-  /** Absolute link to the current setup. Empty until the client has mounted. */
-  shareUrl: string
 }
 
 const WorkspaceContext = createContext<Ctx | null>(null)
@@ -44,7 +42,6 @@ export function WorkspaceProvider({
   const [state, dispatch] = useReducer(reducer, initial, decodeState)
   const [armed, setArmed] = useState<Category | null>(null)
   const [focused, setFocused] = useState<SlotId | null>(null)
-  const [shareUrl, setShareUrl] = useState('')
 
   const query = useMemo(() => toQuery(state), [state])
 
@@ -54,22 +51,12 @@ export function WorkspaceProvider({
    * push an entry the back button has to walk through.
    */
   useEffect(() => {
-    const url = `${window.location.pathname}${query}`
-    window.history.replaceState(null, '', url)
-    setShareUrl(`${window.location.origin}${url}`)
+    window.history.replaceState(null, '', `${window.location.pathname}${query}`)
   }, [query])
 
   const value = useMemo<Ctx>(
-    () => ({
-      state,
-      dispatch,
-      armed,
-      setArmed,
-      focused,
-      setFocused,
-      shareUrl,
-    }),
-    [state, armed, focused, shareUrl],
+    () => ({ state, dispatch, armed, setArmed, focused, setFocused }),
+    [state, armed, focused],
   )
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>

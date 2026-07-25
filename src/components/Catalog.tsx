@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useDraggable } from '@dnd-kit/core'
 import { GROUPS, itemsIn, type Item } from '@/data/catalog'
 import { money } from '@/lib/pricing'
 import { canPlace, countOf } from '@/lib/state'
@@ -12,8 +13,15 @@ function Card({ item }: { item: Item }) {
   const count = countOf(state, item.id)
   const allowed = canPlace(state, item)
 
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `card:${item.id}`,
+    data: { item },
+    disabled: !allowed,
+  })
+
   return (
     <button
+      ref={setNodeRef}
       type="button"
       disabled={!allowed}
       onClick={() => dispatch({ type: 'place', itemId: item.id })}
@@ -22,7 +30,11 @@ function Card({ item }: { item: Item }) {
       onFocus={() => setArmed(item.category)}
       onBlur={() => setArmed(null)}
       title={allowed ? undefined : 'Choose a desk first'}
-      className="group relative flex w-full items-center gap-3 border border-rule bg-card p-2 text-left transition-colors hover:border-surf disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-rule"
+      {...listeners}
+      {...attributes}
+      className={`group relative flex w-full items-center gap-3 border border-rule bg-card p-2 text-left transition-colors hover:border-surf disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-rule ${
+        isDragging ? 'opacity-40' : ''
+      } ${allowed ? 'cursor-grab active:cursor-grabbing' : ''}`}
     >
       <span className="shrink-0 border border-rule/60 bg-paper">
         <ItemThumb item={item} size={54} />
