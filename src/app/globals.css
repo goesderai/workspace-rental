@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
+/**
+ * Direction: an architect's plan for your Bali workspace, in daylight.
+ * Warm paper ground, plan grid, petrol ink linework, teak furniture.
+ * `surf` is reserved for interactive state and `sun` for emphasis only.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #efede4;
+  --grid: #d6d8cb;
+  --ink: #1b2b34;
+  --teak: #ae7549;
+  --surf: #0f8b8d;
+  --sun: #f2c14e;
+
+  --card: #f7f6f1;
+  --rule: #cfd2c4;
+  --muted: #5f7280;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-paper: var(--paper);
+  --color-grid: var(--grid);
+  --color-ink: var(--ink);
+  --color-teak: var(--teak);
+  --color-surf: var(--surf);
+  --color-sun: var(--sun);
+  --color-card: var(--card);
+  --color-rule: var(--rule);
+  --color-muted: var(--muted);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Display type is set wide and tight — it should read as plan signage. */
+.display {
+  font-family: var(--font-display), ui-sans-serif, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+}
+
+/* Small caps-ish eyebrow used for section labels. */
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.num {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--surf);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
