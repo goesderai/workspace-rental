@@ -37,14 +37,18 @@ export function DeskLamp() {
         fill={PALETTE.sun}
         stroke="none"
       />
-      {/* Pool of light on the surface below. */}
+      {/*
+       * Pool of light, placed on the item's own base plane rather than at a
+       * screen-space offset — otherwise it drifts off the desktop and reads as
+       * a stain on the floor.
+       */}
       <ellipse
-        cx={head.x}
-        cy={head.y + 30}
-        rx={20}
-        ry={10}
+        cx={project(-14, 10, 0).x}
+        cy={project(-14, 10, 0).y}
+        rx={17}
+        ry={8.5}
         fill={PALETTE.sun}
-        opacity={0.16}
+        opacity={0.18}
       />
     </g>
   )

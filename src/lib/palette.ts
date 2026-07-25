@@ -15,6 +15,8 @@ export const PALETTE = {
   slate: '#3D5561',
   linen: '#D9D4C5',
   leaf: '#4E8A5B',
+  /** Secondary text, matching `--muted` in globals.css. */
+  muted: '#5F7280',
 } as const
 
 export type PaletteKey = keyof typeof PALETTE

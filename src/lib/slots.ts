@@ -105,10 +105,14 @@ export function anchorsFor(fp: Footprint | null): Record<SlotId, Vec3> {
     // up to it" rather than "parked beside it".
     CHAIR: { x: cx, y: o.y + desk.d + 6, z: 0 },
 
-    // Displays line up along the back edge of the desktop.
-    MON_L: { x: o.x + desk.w * 0.22, y: o.y + 16, z: top },
+    /*
+     * Displays line up along the back edge. The side slots sit close to the
+     * desk edges because three 53-60cm panels genuinely do not fit on a 140cm
+     * desk otherwise — a real triple setup angles them in until they touch.
+     */
+    MON_L: { x: o.x + desk.w * 0.17, y: o.y + 17, z: top },
     MON_C: { x: cx, y: o.y + 14, z: top },
-    MON_R: { x: o.x + desk.w * 0.78, y: o.y + 16, z: top },
+    MON_R: { x: o.x + desk.w * 0.83, y: o.y + 17, z: top },
 
     // Corners of the desktop, mid-depth.
     DESK_L: { x: o.x + 16, y: o.y + desk.d * 0.42, z: top },
