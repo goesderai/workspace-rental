@@ -4,7 +4,10 @@ An interactive workspace planner for [monis.rent](https://www.monis.rent), who r
 equipment by the week to people working out of Bali. You draw up a desk setup on an isometric
 plan, pick how long you need it, and rent it.
 
-**Live:** _see Deployment below_
+**Live:** <https://workspace-rental-zeta.vercel.app>
+
+Try a shared setup:
+[a three-monitor desk in Canggu](https://workspace-rental-zeta.vercel.app/?s=d:desk-electrical_mc:monitor-27_ml:monitor-24_mr:monitor-24_c:chair-ergonomic_s:keyboard-mx_dl:desk-lamp_dr:mug_fl:plant-monstera_r:rug-jute&t=12)
 
 ## What it does
 
