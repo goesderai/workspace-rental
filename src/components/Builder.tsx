@@ -28,13 +28,16 @@ export default function Builder() {
         <div className="mx-auto grid w-full max-w-[1400px] flex-1 gap-6 px-4 pb-6 sm:px-6 lg:grid-cols-[340px_minmax(0,1fr)]">
           {/* Catalog rail */}
           <div className="order-2 lg:order-1">
-            <h2 className="eyebrow mb-2">Catalog — click to add, or drag onto the plan</h2>
+            <h2 className="eyebrow mb-2">
+              Catalog<span className="hidden sm:inline"> — click to add, or drag onto the plan</span>
+            </h2>
             <Catalog />
           </div>
 
           {/* Stage */}
           <div className="order-1 flex min-w-0 flex-col gap-4 lg:order-2">
-            <div className="relative aspect-[3/2] w-full border border-rule bg-card">
+            {/* Taller on a phone, where the plan gets much less width. */}
+            <div className="relative aspect-[4/3] w-full border border-rule bg-card sm:aspect-[3/2]">
               <Stage />
               {isEmpty(state) && <EmptyHint />}
             </div>

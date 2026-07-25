@@ -85,7 +85,13 @@ function PlacedItem({
 }) {
   const { dispatch, setFocused } = useWorkspace()
   const reduced = useReducedMotion()
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+  /*
+   * `attributes` is intentionally not spread here. It would add role="button"
+   * and tabIndex=0 to artwork that lives inside a role="img" SVG, so assistive
+   * tech ignores the name while the tab order collects unlabelled stops. The
+   * summary list is the keyboard route for removing anything.
+   */
+  const { listeners, setNodeRef, isDragging } = useDraggable({
     id: `placed:${slot}`,
     data: { item, from: slot },
   })
@@ -103,7 +109,6 @@ function PlacedItem({
       onClick={() => dispatch({ type: 'remove', slot })}
       className="cursor-grab active:cursor-grabbing"
       {...listeners}
-      {...attributes}
     >
       <g transform={isoTranslate(at.x, at.y, at.z)}>
         <item.Art />

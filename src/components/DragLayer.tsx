@@ -3,7 +3,8 @@
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -30,8 +31,16 @@ export default function DragLayer({ children }: { children: ReactNode }) {
   const { dispatch, setArmed, setFocused } = useWorkspace()
   const [dragging, setDragging] = useState<DragData | null>(null)
 
+  /*
+   * Mouse and touch are deliberately separate. A pointer sensor keyed on
+   * distance would turn every flick down the catalog into a drag on a phone, so
+   * touch requires a short press-and-hold and a plain tap still just adds.
+   */
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 220, tolerance: 8 },
+    }),
   )
 
   /*

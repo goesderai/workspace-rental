@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { deliveryDate, money, quote, TERM_DISCOUNT } from './pricing'
-import { reducer, EMPTY, TERMS, type WorkspaceState } from './state'
+import { reducer, EMPTY, TERMS, type Action, type WorkspaceState } from './state'
 
 /** The setup monis.rent advertises at $24/week: electric desk, chair, 27" 4K. */
 function advertisedSetup(termWeeks: WorkspaceState['termWeeks'] = 1): WorkspaceState {
-  return [
+  const actions: Action[] = [
     { type: 'place', itemId: 'desk-electrical' },
     { type: 'place', itemId: 'chair-ergonomic' },
     { type: 'place', itemId: 'monitor-27' },
     { type: 'setTerm', termWeeks },
-  ].reduce(reducer, EMPTY as WorkspaceState)
+  ]
+  return actions.reduce(reducer, EMPTY)
 }
 
 describe('quote', () => {
@@ -53,11 +54,12 @@ describe('quote', () => {
   })
 
   it('counts a duplicated item once per slot', () => {
-    const twoMonitors = [
+    const actions: Action[] = [
       { type: 'place', itemId: 'desk-electrical' },
       { type: 'place', itemId: 'monitor-24', slot: 'MON_L' },
       { type: 'place', itemId: 'monitor-24', slot: 'MON_R' },
-    ].reduce(reducer, EMPTY as WorkspaceState)
+    ]
+    const twoMonitors = actions.reduce(reducer, EMPTY)
 
     // $5 desk plus two $6 monitors.
     expect(quote(twoMonitors).listWeekly).toBe(17)

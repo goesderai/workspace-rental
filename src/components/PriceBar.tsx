@@ -56,12 +56,12 @@ export default function PriceBar() {
 
   return (
     <div className="border-t border-rule bg-card/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[1400px] flex-wrap items-end gap-x-8 gap-y-4 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 px-4 py-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-x-8 sm:gap-y-4 sm:px-6">
         {/* Term */}
-        <div>
+        <div className="min-w-0">
           <p className="eyebrow mb-1.5">Rental term</p>
           <div
-            className="flex divide-x divide-rule border border-rule"
+            className="flex w-fit max-w-full divide-x divide-rule overflow-x-auto border border-rule"
             role="group"
             aria-label="Rental term"
           >
@@ -73,7 +73,7 @@ export default function PriceBar() {
                   type="button"
                   aria-pressed={on}
                   onClick={() => dispatch({ type: 'setTerm', termWeeks: weeks })}
-                  className={`relative px-3 py-1.5 text-xs transition-colors ${
+                  className={`relative shrink-0 whitespace-nowrap px-3 py-1.5 text-xs transition-colors ${
                     on ? 'bg-ink text-paper' : 'hover:bg-paper'
                   }`}
                 >
@@ -90,12 +90,22 @@ export default function PriceBar() {
         </div>
 
         {/* Running total */}
-        <div className="flex items-end gap-6">
+        <div className="flex items-end justify-between gap-6 sm:justify-start">
           <div>
             <p className="eyebrow mb-1">Your rate</p>
-            <p className="display num text-3xl leading-none">
+            {/*
+             * The ticker counts through intermediate values, which would make a
+             * live region chatter, so it is hidden from assistive tech and the
+             * settled figure is announced once instead.
+             */}
+            <p className="display num text-3xl leading-none" aria-hidden>
               <Ticker value={q.weekly} />
               <span className="ml-1 text-base font-normal text-muted">/week</span>
+            </p>
+            <p className="sr-only" aria-live="polite">
+              {`${money(q.weekly)} per week for ${q.itemCount} ${
+                q.itemCount === 1 ? 'item' : 'items'
+              }, ${money(q.deposit)} refundable deposit.`}
             </p>
           </div>
           <dl className="hidden text-xs sm:block">
@@ -116,19 +126,19 @@ export default function PriceBar() {
           </dl>
         </div>
 
-        <div className="ml-auto flex items-center gap-4">
+        <div className="flex items-center gap-4 sm:ml-auto">
           <p className="hidden text-xs text-muted sm:block">
             Free delivery and setup
             <br />
             <span className="text-ink">Arrives {delivery} in Bali</span>
           </p>
-          <motion.div whileHover={empty ? undefined : { y: -1 }}>
+          <motion.div className="flex-1 sm:flex-none" whileHover={empty ? undefined : { y: -1 }}>
             <Link
               href={empty ? '#' : `/checkout${toQuery(state)}`}
               aria-disabled={empty}
               tabIndex={empty ? -1 : undefined}
               onClick={(e) => empty && e.preventDefault()}
-              className={`inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold transition-colors ${
+              className={`inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-sm font-semibold transition-colors sm:w-auto ${
                 empty
                   ? 'cursor-not-allowed bg-rule text-muted'
                   : 'bg-ink text-paper hover:bg-surf'
