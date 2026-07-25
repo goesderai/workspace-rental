@@ -23,7 +23,9 @@
 # misc
 .DS_Store
 *.pem
+# challenge brief — kept locally, not published
 initial-prompt.md
+workspace-builder-sketch.png
 
 # debug
 npm-debug.log*
