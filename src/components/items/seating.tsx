@@ -93,36 +93,62 @@ export function ChairErgonomic() {
   )
 }
 
-/** Woven rattan lounge stool — the local alternative to another office chair. */
-export function StoolRattan() {
-  const h = 44
-  const weave = [0.3, 0.55, 0.8]
+/**
+ * Teak four-leg chair with a slatted back — the local-workshop alternative to
+ * another mesh task chair, and unmistakably a chair at stage scale.
+ */
+export function ChairTeak() {
+  const seatZ = 44
+  const slats = [0, 9, 18]
+
   return (
     <g>
-      <Shadow w={46} d={46} opacity={0.13} />
-      <Cylinder r={22} h={h} fill={PALETTE.teak} taper={0.94} />
-      {/* Two courses of weave read as rattan without drawing every strand. */}
-      <g stroke={shade(PALETTE.teak, 0.6)} strokeWidth={STROKE} fill="none" opacity={0.7}>
-        {weave.map((t) => {
-          const l = project(-22, 0, h * t)
-          const r = project(22, 0, h * t)
-          return (
-            <path
-              key={t}
-              d={`M ${l.x} ${l.y} Q 0 ${(l.y + r.y) / 2 + 9} ${r.x} ${r.y}`}
-            />
-          )
-        })}
-      </g>
-      <ellipse
-        cx={project(0, 0, h).x}
-        cy={project(0, 0, h).y}
-        rx={20}
-        ry={10}
-        fill={shade(PALETTE.linen, 1.02)}
-        stroke={shade(PALETTE.teak, 0.6)}
-        strokeWidth={STROKE}
-      />
+      <Shadow w={44} d={44} opacity={0.13} />
+
+      {/* Legs, splayed very slightly outward at the foot. */}
+      {[
+        [-1, -1],
+        [1, -1],
+        [-1, 1],
+        [1, 1],
+      ].map(([sx, sy]) => (
+        <Box
+          key={`${sx}${sy}`}
+          x={sx * 17}
+          y={sy * 17}
+          w={4}
+          d={4}
+          h={seatZ}
+          fill={PALETTE.teak}
+        />
+      ))}
+
+      <Box w={42} d={40} h={5} z={seatZ} fill={shade(PALETTE.teak, 1.06)} />
+
+      {/* Back posts and horizontal slats, drawn last: they sit nearest. */}
+      {[-1, 1].map((s) => (
+        <Box
+          key={s}
+          x={s * 18}
+          y={17}
+          w={4}
+          d={4}
+          h={44}
+          z={seatZ + 5}
+          fill={PALETTE.teak}
+        />
+      ))}
+      {slats.map((dz) => (
+        <Box
+          key={dz}
+          y={17}
+          w={34}
+          d={2.6}
+          h={5}
+          z={seatZ + 20 + dz}
+          fill={shade(PALETTE.teak, 1.12)}
+        />
+      ))}
     </g>
   )
 }
