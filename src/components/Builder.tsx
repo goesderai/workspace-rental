@@ -29,7 +29,12 @@ export default function Builder() {
           {/* Catalog rail */}
           <div className="order-2 lg:order-1">
             <h2 className="eyebrow mb-2">
-              Catalog<span className="hidden sm:inline"> — click to add, or drag onto the plan</span>
+              Catalog
+              <span className="hidden sm:inline">
+                {' '}
+                — click to add, or drag onto the plan. Click a placed item, or drag it off, to
+                remove.
+              </span>
             </h2>
             <Catalog />
           </div>
